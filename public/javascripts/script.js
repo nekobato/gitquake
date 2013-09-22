@@ -1,1 +1,68 @@
-!function(){var e,t;e=function(){},t=io.connect("//localhost:3000"),t.on("quake",function(e){return e.num=$(".quakeplate."+e.branch).children(".commit").length,console.log(e),$(".quakeplate."+e.branch).append(_.template($("#quakemsg-template").text(),e)),this}),t.on("logs",function(e){var t,a,n,o,l,p,u,r,h,c,g,s,m,i;for(o=[],r=0,g=e.length;g>r;r++)for(a=e[r],$(".quakearea").append(_.template($("#quakeplate-template").text(),a)),i=a.log,h=0,s=i.length;s>h;h++)u=i[h],console.log(u),u.match(/^(.+),(.+),(.+),(.+)/),p={branch:a.name,hash:RegExp.$1,author:RegExp.$2,date:RegExp.$3,msg:RegExp.$4},o.push(p);for(o=_.sortBy(o,function(e){return e.date}),l=0,c=0,m=o.length;m>c;c++)n=o[c],n.hash!==t&&l++,n.num=l,$(".quakeplate."+n.branch).append(_.template($("#quakemsg-template").text(),n)),t=n.hash;return this})}.call(this);
+(function() {
+  var commit, hashs, socket;
+
+  commit = function(data, branch) {
+    var info;
+    data.match(/^(.+),(.+),(.+),(.+)/);
+    return info = {
+      branch: branch,
+      hash: RegExp.$1,
+      author: RegExp.$2,
+      date: RegExp.$3.match(/^(.+) (.+) (.+)/),
+      msg: RegExp.$4
+    };
+  };
+
+  hashs = [];
+
+  socket = io.connect('//localhost:3000');
+
+  socket.on('quake', function(d) {
+    var data, hash, _i, _len;
+    data = commit(d.log, d.branch);
+    if (!$('.quakeplate.' + data.branch)) {
+      $('.quakearea').append(_.template($('#quakeplate-template').text(), data));
+    }
+    for (_i = 0, _len = hashs.length; _i < _len; _i++) {
+      hash = hashs[_i];
+      if (hash === data.hash) {
+        data.num = $.inArray(hash, hashs);
+        $('.quakeplate.' + data.branch).append(_.template($('#quakemsg-template').text(), data));
+      }
+    }
+    data.num = $('.quakeplate.' + data.branch).children('.commit').length;
+    $('.quakeplate.' + data.branch).append(_.template($('#quakemsg-template').text(), data));
+    return this;
+  });
+
+  socket.on('logs', function(data) {
+    var backhash, branch, commits, i, info, line, _i, _j, _k, _len, _len1, _len2, _ref;
+    commits = [];
+    for (_i = 0, _len = data.length; _i < _len; _i++) {
+      branch = data[_i];
+      $('.quakearea').append(_.template($('#quakeplate-template').text(), branch));
+      _ref = branch.log;
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        line = _ref[_j];
+        info = commit(line, branch.name);
+        commits.push(info);
+      }
+    }
+    commits = _.sortBy(commits, function(i) {
+      return i.date[0];
+    });
+    i = 0;
+    for (_k = 0, _len2 = commits.length; _k < _len2; _k++) {
+      commit = commits[_k];
+      if (commit.hash !== backhash) {
+        hashs.push(commit.hash);
+        i++;
+      }
+      commit.num = i;
+      $('.quakeplate.' + commit.branch).append(_.template($('#quakemsg-template').text(), commit));
+      backhash = commit.hash;
+    }
+    return this;
+  });
+
+}).call(this);

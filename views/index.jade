@@ -9,8 +9,8 @@ block content
       <h2><%= name %></h2>
     </div>
   script#quakemsg-template(type='text/template').
-    <div class="commit" style="left: <%= num * 160 %>px">
+    <div class="commit" data-hash="<%= hash %>" data-date="<%= date[1] + ' ' + date[2] %>" style="left: <%= num * 100 %>px">
       <span class="hash"><%= hash %></span>
       <span class="author"><%= author %></span>
-      <p class="date"><%= date %></p>
+      <p class="date"><%= date[1] + ' ' + date[2] %></p>
     </div>

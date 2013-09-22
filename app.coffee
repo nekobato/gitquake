@@ -43,14 +43,9 @@ QuakeMonitor = () ->
 	console.info 'start monitoring'
 	fs.watch "#{repository}/refs/heads/", (e, filename) ->
 		exec "cd #{repository} && git show #{filename} --pretty=format:'%h,%an,%ad,%s'", (err, stdout, stderr) ->
-			stdout.toString().match /^(.+),(.+),(.+),(.+)(\n|\r)/
 			info =
-				branch: filename
-				hash: RegExp.$1
-				author: RegExp.$2
-				date: RegExp.$3
-				msg: RegExp.$4
-			console.log info
+				name: filename
+				log: stdout.toString().split(os.EOL)
 			eEmitter.emit('quake', info) if info
 			@
 		@

@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "penna";
+  src: url('/stylesheets/fonts/../../fonts/penna-webfont.eot') format('embedded-opentype'), url('/stylesheets/fonts/../../fonts/penna-webfont.eot?#iefix') format('embedded-opentype'), url('/stylesheets/fonts/../../fonts/penna-webfont.woff') format('woff'), url('/stylesheets/fonts/../../fonts/penna-webfont.ttf') format('truetype'), url('/stylesheets/fonts/../../fonts/penna-webfont.svg#PennaRegular') format('svg');
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -20,6 +25,12 @@ h1 {
   padding: 0 0 0 20px;
 }
 
+h2 {
+  display: inline;
+  font-size: 42px;
+  font-family: "penna";
+}
+
 .quakearea {
   padding: 30px;
   overflow-x: scroll;
@@ -32,8 +43,8 @@ h1 {
 .quakearea .quakeplate .commit {
   position: absolute;
   display: inline-block;
-  width: 130px;
-  height: 80px;
+  width: 70px;
+  height: 60px;
   padding: 6px 10px;
   background: #cccccc;
   border-radius: 4px;
