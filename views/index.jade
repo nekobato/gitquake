@@ -3,14 +3,23 @@ extends layout
 block content
   header
     h1 GitQuake
-  div.quakearea
-  script#quakeplate-template(type='text/template').
-    <div class="quakeplate <%= name %>">
-      <h2><%= name %></h2>
-    </div>
+  table#monitor
+    thead
+      tr
+
+  script#quakeplate-log(type='text/template').
+    <th>
+      
+    </th>
   script#quakemsg-template(type='text/template').
     <div class="commit" data-hash="<%= hash %>" data-date="<%= date[1] + ' ' + date[2] %>" style="left: <%= num * 100 %>px">
       <span class="hash"><%= hash %></span>
       <span class="author"><%= author %></span>
       <p class="date"><%= date[1] + ' ' + date[2] %></p>
     </div>
+  script#quake-branch(type='text/template').
+    <tr>
+      <th><%= name %></th>
+    </tr>
+  script#quake-commit(type='text/template').
+  

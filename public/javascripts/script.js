@@ -1,10 +1,9 @@
 (function() {
-  var commit, hashs, socket;
+  var geninfo, hashs, socket;
 
-  commit = function(data, branch) {
-    var info;
+  geninfo = function(data, branch) {
     data.match(/^(.+),(.+),(.+),(.+)/);
-    return info = {
+    return {
       branch: branch,
       hash: RegExp.$1,
       author: RegExp.$2,
@@ -18,51 +17,75 @@
   socket = io.connect('//localhost:3000');
 
   socket.on('quake', function(d) {
-    var data, hash, _i, _len;
-    data = commit(d.log, d.branch);
-    if (!$('.quakeplate.' + data.branch)) {
-      $('.quakearea').append(_.template($('#quakeplate-template').text(), data));
+    if (hashs.indexOf(info.hash) > -1) {
+      info.num = hashs.indexOf(info.hash) + 1;
+      $('.quakeplate.' + info.branch).append(_.template($('#quakemsg-template').text(), info));
+    } else {
+      info.num = hashs.length + 1;
+      $('.quakeplate.' + info.branch).append(_.template($('#quakemsg-template').text(), info));
     }
-    for (_i = 0, _len = hashs.length; _i < _len; _i++) {
-      hash = hashs[_i];
-      if (hash === data.hash) {
-        data.num = $.inArray(hash, hashs);
-        $('.quakeplate.' + data.branch).append(_.template($('#quakemsg-template').text(), data));
-      }
-    }
-    data.num = $('.quakeplate.' + data.branch).children('.commit').length;
-    $('.quakeplate.' + data.branch).append(_.template($('#quakemsg-template').text(), data));
     return this;
   });
 
-  socket.on('logs', function(data) {
-    var backhash, branch, commits, i, info, line, _i, _j, _k, _len, _len1, _len2, _ref;
+  socket.on('uplift', function(data) {
+    var commit, commits, info, line, _i, _j, _len, _len1, _ref, _results;
+    console.log(data);
+    $('.quakearea').append(_.template($('#quakeplate-template').text(), data));
     commits = [];
-    for (_i = 0, _len = data.length; _i < _len; _i++) {
-      branch = data[_i];
-      $('.quakearea').append(_.template($('#quakeplate-template').text(), branch));
-      _ref = branch.log;
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        line = _ref[_j];
-        info = commit(line, branch.name);
-        commits.push(info);
-      }
+    _ref = data.log;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      line = _ref[_i];
+      info = geninfo(line, data.name);
+      commits.push(info);
     }
     commits = _.sortBy(commits, function(i) {
       return i.date[0];
     });
-    i = 0;
-    for (_k = 0, _len2 = commits.length; _k < _len2; _k++) {
-      commit = commits[_k];
+    _results = [];
+    for (_j = 0, _len1 = commits.length; _j < _len1; _j++) {
+      commit = commits[_j];
+      if (hashs.indexOf(commit.hash) > -1) {
+        commit.num = hashs.indexOf(info.hash) + 1;
+        _results.push($('.quakeplate.' + commit.branch).append(_.template($('#quakemsg-template').text(), commit)));
+      } else {
+        commit.num = hashs.length + 1;
+        _results.push($('.quakeplate.' + info.branch).append(_.template($('#quakemsg-template').text(), commit)));
+      }
+    }
+    return _results;
+  });
+
+  socket.on('log', function(data) {
+    var backhash, commit, commits, info, line, num, _i, _j, _len, _len1, _ref;
+    console.log(data);
+    commits = [];
+    $('.quakearea').append(_.template($('#quakeplate-template').text(), data));
+    _ref = data.log;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      line = _ref[_i];
+      info = geninfo(line, data.name);
+      commits.push(info);
+    }
+    commits = _.sortBy(commits, function(i) {
+      return i.date[0];
+    });
+    num = 0;
+    for (_j = 0, _len1 = commits.length; _j < _len1; _j++) {
+      commit = commits[_j];
       if (commit.hash !== backhash) {
         hashs.push(commit.hash);
-        i++;
+        num++;
       }
-      commit.num = i;
+      commit.num = num;
       $('.quakeplate.' + commit.branch).append(_.template($('#quakemsg-template').text(), commit));
       backhash = commit.hash;
     }
     return this;
+  });
+
+  socket.on('connect', function() {
+    console.log('conection start');
+    return socket.emit('log', {});
   });
 
 }).call(this);

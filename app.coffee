@@ -4,7 +4,6 @@ Module dependencies.
 ###
 express = require("express")
 routes = require("./routes")
-user = require("./routes/user")
 http = require("http")
 path = require("path")
 app = express()
@@ -14,6 +13,7 @@ exec = require("child_process").exec
 socketio = require("socket.io")
 events = require('events')
 async = require('async')
+__ = require('underscore')
 
 # all environments
 app.set "port", process.env.PORT or 3000
@@ -32,49 +32,55 @@ repository = './test/repository'
 # routes
 app.get "/", routes.index
 
-# server
 server = http.createServer(app)
 server.listen app.get("port"), ->
   console.info "Express server listening on port " + app.get("port")
 
 # monitor git
-QuakeMonitor = () ->
+QuakeMonitor = (repository) ->
 	eEmitter = new events.EventEmitter
 	console.info 'start monitoring'
 	fs.watch "#{repository}/refs/heads/", (e, filename) ->
-		exec "cd #{repository} && git show #{filename} --pretty=format:'%h,%an,%ad,%s'", (err, stdout, stderr) ->
-			info =
-				name: filename
-				log: stdout.toString().split(os.EOL)
-			eEmitter.emit('quake', info) if info
+		console.info "#{filename} : #{e}"
+		if e is 'rename'
+			exec "cd #{repository} && git log #{filename} --date=iso --pretty=format:'%h,%an,%ad,%s'", (err, stdout, stderr) ->
+				eEmitter.emit 'uplift',
+					name: filename
+					log: stdout.toString().split(os.EOL)
+		else
+			exec "cd #{repository} && git show #{filename} --date=iso --pretty=format:'%h,%an,%ad,%s'", (err, stdout, stderr) ->
+				eEmitter.emit 'quake',
+					name: filename
+					log: stdout.toString().split(os.EOL)
 			@
 		@
 	eEmitter
 
-monitor = new QuakeMonitor()
-
 # log history
-History = () ->
-	logs = []
-	fs.readdir "#{repository}/refs/heads/", (err, files) ->
-		async.each files, (file, res) ->
-			exec "cd #{repository} && git log #{file} --date=iso --pretty=format:'%h,%an,%ad,%s'", (err, stdout, stderr) ->
-				logs.push
-					name: file
-					log: stdout.toString().split(os.EOL)
-	logs
-
-logs = new History()
+monitor = new QuakeMonitor(repository)
 
 # socket.io
 io = socketio.listen(server, {log: false})
 io.on 'connection', (socket) ->
 	console.info 'connection appeared'
-	socket.emit 'logs', logs
-	# TODO get all branch's latest 20 commit log in each connection
+
+	fs.readdir "#{repository}/refs/heads/", (err, files) ->
+		async.each files, (file, res) ->
+			exec "cd #{repository} && git log #{file} --date=iso --pretty=format:'%h,%an,%ad,%s'", (err, stdout, stderr) ->
+				socket.emit 'log',
+					name: file
+					log: stdout.toString().split(os.EOL)
+
+	console.log process.memoryUsage() #debug
+
 	monitor.on 'quake', (data)->
 		socket.emit 'quake', data
 		@
+
+	monitor.on 'uplift', (data) ->
+		socket.emit 'uplift', data
+		@
+
 	socket.on 'disconnect', ->
 		console.log 'client disconnected'
 		@
