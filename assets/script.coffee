@@ -1,4 +1,6 @@
-geninfo = (data, branch) ->
+history = []
+
+extract = (data, branch) ->
 	data.match /^(.+),(.+),(.+),(.+)/
 	{
 		branch: branch
@@ -7,18 +9,24 @@ geninfo = (data, branch) ->
 		date: RegExp.$3.match(/^(.+) (.+) (.+)/)
 		msg: RegExp.$4 }
 
-= []
-
 socket = io.connect '//localhost:3000'
 
 socket.on 'quake', (d) ->
-	if hashs.indexOf(info.hash) > -1
-		info.num = hashs.indexOf(info.hash) + 1
-		$('.quakeplate.' + info.branch).append _.template($('#quakemsg-template').text(), info)
-	else
-		info.num = hashs.length + 1
-		$('.quakeplate.' + info.branch).append _.template($('#quakemsg-template').text(), info)
-	@
+	for log in d.log
+		commit = extract log
+		commit.branch = d.name
+		console.log commit
+
+		for h in history
+			history[h.indexOf(commit.hash)].branch[commit.branch] = true if commit.hash == h.history
+
+		if hashs.indexOf(commit.hash) > -1
+			commit.num = hashs.indexOf(commit.hash) + 1
+			$('.quakeplate.' + commit.branch).append _.template($('#quakemsg-template').text(), commit)
+		else
+			commit.num = hashs.length + 1
+			$('.quakeplate.' + commit.branch).append _.template($('#quakemsg-template').text(), commit)
+		@
 
 socket.on 'uplift', (data) ->
 	console.log data

@@ -1,7 +1,9 @@
 (function() {
-  var geninfo, hashs, socket;
+  var extract, history, socket;
 
-  geninfo = function(data, branch) {
+  history = [];
+
+  extract = function(data, branch) {
     data.match(/^(.+),(.+),(.+),(.+)/);
     return {
       branch: branch,
@@ -12,19 +14,33 @@
     };
   };
 
-  hashs = [];
-
   socket = io.connect('//localhost:3000');
 
   socket.on('quake', function(d) {
-    if (hashs.indexOf(info.hash) > -1) {
-      info.num = hashs.indexOf(info.hash) + 1;
-      $('.quakeplate.' + info.branch).append(_.template($('#quakemsg-template').text(), info));
-    } else {
-      info.num = hashs.length + 1;
-      $('.quakeplate.' + info.branch).append(_.template($('#quakemsg-template').text(), info));
+    var commit, h, log, _i, _j, _len, _len1, _ref, _results;
+    _ref = d.log;
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      log = _ref[_i];
+      commit = extract(log);
+      commit.branch = d.name;
+      console.log(commit);
+      for (_j = 0, _len1 = history.length; _j < _len1; _j++) {
+        h = history[_j];
+        if (commit.hash === h.history) {
+          history[h.indexOf(commit.hash)].branch[commit.branch] = true;
+        }
+      }
+      if (hashs.indexOf(commit.hash) > -1) {
+        commit.num = hashs.indexOf(commit.hash) + 1;
+        $('.quakeplate.' + commit.branch).append(_.template($('#quakemsg-template').text(), commit));
+      } else {
+        commit.num = hashs.length + 1;
+        $('.quakeplate.' + commit.branch).append(_.template($('#quakemsg-template').text(), commit));
+      }
+      _results.push(this);
     }
-    return this;
+    return _results;
   });
 
   socket.on('uplift', function(data) {
