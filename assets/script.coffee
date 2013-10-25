@@ -16,18 +16,10 @@ socket.on 'quake', (d) ->
 		commit = extract log
 		commit.branch = d.name
 		console.log commit
-
 		for h in history
 			history[h.indexOf(commit.hash)].branch[commit.branch] = true if commit.hash == h.history
-
-		if hashs.indexOf(commit.hash) > -1
-			commit.num = hashs.indexOf(commit.hash) + 1
-			$('.quakeplate.' + commit.branch).append _.template($('#quakemsg-template').text(), commit)
-		else
-			commit.num = hashs.length + 1
-			$('.quakeplate.' + commit.branch).append _.template($('#quakemsg-template').text(), commit)
-		@
-
+	console.log history
+	
 socket.on 'uplift', (data) ->
 	console.log data
 	$('.quakearea').append _.template($('#quakeplate-template').text(), data)

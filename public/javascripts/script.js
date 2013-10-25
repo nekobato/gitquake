@@ -17,9 +17,8 @@
   socket = io.connect('//localhost:3000');
 
   socket.on('quake', function(d) {
-    var commit, h, log, _i, _j, _len, _len1, _ref, _results;
+    var commit, h, log, _i, _j, _len, _len1, _ref;
     _ref = d.log;
-    _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       log = _ref[_i];
       commit = extract(log);
@@ -31,16 +30,8 @@
           history[h.indexOf(commit.hash)].branch[commit.branch] = true;
         }
       }
-      if (hashs.indexOf(commit.hash) > -1) {
-        commit.num = hashs.indexOf(commit.hash) + 1;
-        $('.quakeplate.' + commit.branch).append(_.template($('#quakemsg-template').text(), commit));
-      } else {
-        commit.num = hashs.length + 1;
-        $('.quakeplate.' + commit.branch).append(_.template($('#quakemsg-template').text(), commit));
-      }
-      _results.push(this);
     }
-    return _results;
+    return console.log(history);
   });
 
   socket.on('uplift', function(data) {
