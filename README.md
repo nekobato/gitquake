@@ -1,4 +1,17 @@
 gitquake
 ========
+GitQuake is a realtime repository-viewer application for Digital Signage.
 
-A Web Application that monitors the git repository, and notifies.
+# Introduction
+
+TBW
+
+# Functions
+
+## View commits
+
+TBW
+
+## Code view
+
+TBW

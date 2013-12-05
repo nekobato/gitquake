@@ -1,11 +1,15 @@
-extends layout
-
-block content
-  header
-    h1 GitQuake
-  table#monitor
-    thead
-      tr
+doctype 5
+html
+  head
+    title GitQuake
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    header
+      h1 GitQuake
+    table#monitor
+      thread
+        tr
+          td hoge
 
   script#quakeplate-log(type='text/template').
     <th>
@@ -21,5 +25,7 @@ block content
     <tr>
       <th><%= name %></th>
     </tr>
-  script#quake-commit(type='text/template').
-  
+  script(src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js')
+  script(src='/socket.io/socket.io.js')
+  script(src='/javascripts/script.js')
+    

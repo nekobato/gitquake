@@ -1,9 +1,9 @@
 {
-  "name": "application-name",
+  "name": "GitQuake",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node app.js"
+    "start": "coffee server.coffee"
   },
   "dependencies": {
     "express": "3.4.0",
@@ -11,5 +11,11 @@
     "underscore": "~1.5.2",
     "commander": "~2.0.0",
     "async": "~0.2.9"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-sass": "~0.5.1"
   }
 }
