@@ -5,11 +5,20 @@ module.exports = (grunt) ->
 
     coffee:
       options:
-        sourceMap: yes
+        sourceMap: no
       compile:
         files: [{
+          'server.js': 'src/server.coffee'
+        }, {
           expand: yes
-          cwd: 'assets/coffee'
+          cwd: 'src/lib'
+          src: [ '*.coffee' ]
+          dest: 'lib'
+          ext: '.js'
+        }, {
+          sourceMap: yes
+          expand: yes
+          cwd: 'src/coffee'
           src: [ '*.coffee' ]
           dest: 'dist/javascripts'
           ext: '.js'
@@ -23,7 +32,7 @@ module.exports = (grunt) ->
       dist:
         files: [{
           expand: true
-          cwd: 'assets/sass'
+          cwd: 'src/sass'
           src: [ '*.sass' ]
           dest: 'dist/stylesheets'
           ext: '.css'
@@ -33,11 +42,11 @@ module.exports = (grunt) ->
       options:
         dateFormat: (time) ->
           grunt.log.writeln "The watch finished in #{time}ms at #{new Date().toLocaleTimeString()}"
-      coffee:
-        files: ['assets/**/*.coffee']
+      script:
+        files: ['src/**/*.coffee']
         tasks: ['coffee']
       sass:
-        files: ['assets/**/*.sass']
+        files: ['src/sass/*.sass']
         tasks: ['sass']
 
   # compile

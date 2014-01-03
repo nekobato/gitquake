@@ -6,26 +6,16 @@ html
   body
     header
       h1 GitQuake
-    table#monitor
-      thread
-        tr
-          td hoge
-
-  script#quakeplate-log(type='text/template').
-    <th>
-      
-    </th>
-  script#quakemsg-template(type='text/template').
-    <div class="commit" data-hash="<%= hash %>" data-date="<%= date[1] + ' ' + date[2] %>" style="left: <%= num * 100 %>px">
-      <span class="hash"><%= hash %></span>
-      <span class="author"><%= author %></span>
-      <p class="date"><%= date[1] + ' ' + date[2] %></p>
-    </div>
-  script#quake-branch(type='text/template').
-    <tr>
-      <th><%= name %></th>
-    </tr>
-  script(src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js')
-  script(src='/socket.io/socket.io.js')
+    div#table-log
+      div#table-branch
+  script#git-branch(type='text/template')
+    div.branch
+      h2 <%= branch %>
+  script#git-commit(type='text/template')
+    div.commit
+      span.hash <%= hash %>
+      span.author <%= author %>
+      p.date <%= date %>
+  script(src='/javascripts/jquery-2.0.3.min.js')
+  script(src='/javascripts/underscore-min.js')
   script(src='/javascripts/script.js')
-    

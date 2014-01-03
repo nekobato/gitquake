@@ -1,102 +1,99 @@
 (function() {
-  var extract, history, socket;
+  var Git, Log, View, git, hash_history, log, view;
 
-  history = [];
+  hash_history = {};
 
-  extract = function(data, branch) {
-    data.match(/^(.+),(.+),(.+),(.+)/);
-    return {
-      branch: branch,
-      hash: RegExp.$1,
-      author: RegExp.$2,
-      date: RegExp.$3.match(/^(.+) (.+) (.+)/),
-      msg: RegExp.$4
-    };
+  Git = function() {};
+
+  Git.prototype.branch = function(callback) {
+    return $.ajax({
+      url: '/branch',
+      dataType: 'json'
+    }).done(function(data) {
+      return callback(data);
+    });
   };
 
-  socket = io.connect('//localhost:3006');
-
-  socket.on('quake', function(d) {
-    var commit, h, log, _i, _j, _len, _len1, _ref;
-    _ref = d.log;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      log = _ref[_i];
-      commit = extract(log);
-      commit.branch = d.name;
-      console.log(commit);
-      for (_j = 0, _len1 = history.length; _j < _len1; _j++) {
-        h = history[_j];
-        if (commit.hash === h.history) {
-          history[h.indexOf(commit.hash)].branch[commit.branch] = true;
-        }
-      }
-    }
-    return console.log(history);
-  });
-
-  socket.on('uplift', function(data) {
-    var commit, commits, info, line, _i, _j, _len, _len1, _ref, _results;
-    console.log(data);
-    $('.quakearea').append(_.template($('#quakeplate-template').text(), data));
-    commits = [];
-    _ref = data.log;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      line = _ref[_i];
-      info = geninfo(line, data.name);
-      commits.push(info);
-    }
-    commits = _.sortBy(commits, function(i) {
-      return i.date[0];
+  Git.prototype.show = function(hash, callback) {
+    return $.ajax({
+      url: "/commit/" + hash,
+      dataType: 'json'
+    }).done(function(data) {
+      return callback(data);
     });
+  };
+
+  Git.prototype.log = function(branch, callback) {
+    return $.ajax({
+      url: "/log/" + branch,
+      dataType: 'json'
+    }).done(function(data) {
+      return callback(data);
+    });
+  };
+
+  git = new Git;
+
+  View = function() {};
+
+  View.prototype.branch = function(data) {
+    return $('#table-branch').append(_.template($('#git-branch').text(), data));
+  };
+
+  View.prototype.log = function(data) {
+    return $('#table-log').append(_.template($('#git-log').text(), data));
+  };
+
+  view = new View;
+
+  Log = function() {};
+
+  Log.prototype.branch = function(data, callback) {
+    var i, _i, _len, _results;
     _results = [];
-    for (_j = 0, _len1 = commits.length; _j < _len1; _j++) {
-      commit = commits[_j];
-      if (hashs.indexOf(commit.hash) > -1) {
-        commit.num = hashs.indexOf(info.hash) + 1;
-        _results.push($('.quakeplate.' + commit.branch).append(_.template($('#quakemsg-template').text(), commit)));
+    for (_i = 0, _len = data.length; _i < _len; _i++) {
+      i = data[_i];
+      _results.push(callback(i));
+    }
+    return _results;
+  };
+
+  Log.prototype.log = function(data, callback) {
+    var i, _i, _len, _ref, _results;
+    if (!data.result) {
+      return false;
+    }
+    _ref = data.result;
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      i = _ref[_i];
+      if (!log[i.hash]) {
+        _results.push(log[i.hash] = i.time);
       } else {
-        commit.num = hashs.length + 1;
-        _results.push($('.quakeplate.' + info.branch).append(_.template($('#quakemsg-template').text(), commit)));
+        _results.push(void 0);
       }
+    }
+    return _results;
+  };
+
+  log = new Log;
+
+  git.branch(function(data) {
+    var branch, _i, _len, _results;
+    _results = [];
+    for (_i = 0, _len = data.length; _i < _len; _i++) {
+      branch = data[_i];
+      _results.push(git.log(branch, function(data) {
+        return hash_history.push(data.result);
+      }));
     }
     return _results;
   });
 
-  socket.on('log', function(data) {
-    var backhash, commit, commits, info, line, num, _i, _j, _len, _len1, _ref;
-    console.log(data);
-    commits = [];
-    $('.quakearea').append(_.template($('#quakeplate-template').text(), data));
-    _ref = data.log;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      line = _ref[_i];
-      info = geninfo(line, data.name);
-      commits.push(info);
-    }
-    commits = _.sortBy(commits, function(i) {
-      return i.date[0];
+  git.branch(function(data) {
+    return log.branch(data, function(data) {
+      return log.log(data, function(data) {});
     });
-    num = 0;
-    for (_j = 0, _len1 = commits.length; _j < _len1; _j++) {
-      commit = commits[_j];
-      if (commit.hash !== backhash) {
-        hashs.push(commit.hash);
-        num++;
-      }
-      commit.num = num;
-      $('.quakeplate.' + commit.branch).append(_.template($('#quakemsg-template').text(), commit));
-      backhash = commit.hash;
-    }
-    return this;
-  });
-
-  socket.on('connect', function() {
-    console.log('conection start');
-    return socket.emit('log', {});
   });
 
 }).call(this);
-
-/*
-//@ sourceMappingURL=script.js.map
-*/

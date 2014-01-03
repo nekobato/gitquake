@@ -2,13 +2,13 @@ history = []
 
 extract = (data, branch) ->
 	data.match /^(.+),(.+),(.+),(.+)/
-	{
+	return {
 		branch: branch
 		hash: RegExp.$1
 		author: RegExp.$2
 		date: RegExp.$3.match(/^(.+) (.+) (.+)/)
 		msg: RegExp.$4 }
-
+###
 socket = io.connect '//localhost:3006'
 
 socket.on 'quake', (d) ->
@@ -54,8 +54,34 @@ socket.on 'log', (data) ->
 		commit.num = num
 		$('.quakeplate.' + commit.branch).append _.template($('#quakemsg-template').text(), commit)
 		backhash = commit.hash
-	@
 
 socket.on 'connect', () ->
 	console.log 'conection start'
 	socket.emit 'log', {}
+###
+
+# call API
+git =
+	branch: (callback) ->
+		$.ajax({url: '/branch', dataType: 'json'})
+		.done (data) ->
+			callback(data)
+	show: (hash, callback) ->
+		$.ajax({url: "/commit/#{hash}", dataType: 'json'})
+		.done (data) ->
+			callback(data)
+	log: (branch, callback) ->
+		$.ajax({url: "/log/#{branch}", dataType: 'json'})
+		.done (data) ->
+			callback(data)
+
+view =
+	branch: (data) ->
+		for branch in data
+			$('#log-branch').append _.template($('#git-branch').text(), branch)
+
+$(document).load ->
+	console.log git.branch
+	git.branch (data) ->
+		
+		view.branch data
